@@ -37,19 +37,7 @@ public class ExchangeService {
     public ResponseEntity<?> execute(ExchangeRequestDto exchangeRequestDto) {
         try {
             if (validateAmount(exchangeRequestDto)) {
-
-                switch (exchangeRequestDto.getExchangeType()) {
-                    case BUY:
-                        buy(exchangeRequestDto);
-                        return new ResponseEntity<>("Buy operation completed", HttpStatus.OK);
-                    case SELL:
-                        sell(exchangeRequestDto);
-                        break;
-                    case SEND:
-                        send(exchangeRequestDto);
-                        break;
-                }
-
+               return  getStringResponseEntity(exchangeRequestDto);
             } else return new ResponseEntity<>(
                     "Amount not enough",
                     HttpStatus.BAD_REQUEST);
@@ -59,7 +47,21 @@ public class ExchangeService {
                     ex.getMessage(),
                     HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.ok(200);
+    }
+
+    private ResponseEntity<String> getStringResponseEntity(ExchangeRequestDto exchangeRequestDto) {
+        switch (exchangeRequestDto.getExchangeType()) {
+            case BUY:
+                buy(exchangeRequestDto);
+                return new ResponseEntity<>("Buy operation completed", HttpStatus.OK);
+            case SELL:
+                sell(exchangeRequestDto);
+                return new ResponseEntity<>("Sell operation completed", HttpStatus.OK);
+            case SEND:
+                send(exchangeRequestDto);
+                return new ResponseEntity<>("Send operation completed", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Operation not supported", HttpStatus.BAD_REQUEST);
     }
 
     @PostConstruct
@@ -82,7 +84,7 @@ public class ExchangeService {
                 .collect(Collectors.toList());
 
         if (balances.size() == 0) {
-            throw new Exception("Account does not have open instrument !");
+            throw new Exception("Account does not have open instrument!");
         } else return exchangeRequestDto.getAmount() <= balances.get(0).getQty();
 
     }
